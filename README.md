@@ -11,6 +11,14 @@
 - **会话管理**:侧边栏会话列表,右键重命名 / 删除 / 导出 HTTP 数据(含请求与响应原始报文)
 - **细节体验**:侧边栏可拖动调宽、消息自由复制、贴底自动跟随滚动、设置本地持久化
 
+## 截图
+
+![主界面](docs/screenshot-chat.png)
+
+| 模型服务设置 | 编辑模型配置 |
+| --- | --- |
+| ![模型服务设置](docs/screenshot-provider.png) | ![编辑模型配置](docs/screenshot-model.png) |
+
 ## 下载
 
 前往 [Releases](../../releases) 页面下载:
