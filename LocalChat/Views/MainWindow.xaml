@@ -4,7 +4,7 @@
         Title="本地聊天" Height="760" Width="1160" MinHeight="600" MinWidth="940"
         WindowStartupLocation="CenterScreen" Background="#F7F8FA"
         Icon="pack://application:,,,/app.ico"
-        FontFamily="Microsoft YaHei UI" FontSize="13" Foreground="#1F2328"
+        FontFamily="Microsoft YaHei UI" FontSize="{DynamicResource UiFontDefault}" Foreground="#1F2328"
         UseLayoutRounding="True" TextOptions.TextRenderingMode="ClearType"
         PreviewMouseDown="Window_PreviewMouseDown">
     <Window.Resources>
@@ -33,7 +33,7 @@
                     <TextBox Style="{StaticResource SelectableText}"
                              Text="{Binding Content, Mode=OneWay}"
                              IsReadOnly="True" IsTabStop="False"
-                             FontSize="13.5" TextWrapping="Wrap"
+                             FontSize="{DynamicResource ChatFontBody}" TextWrapping="Wrap"
                              HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
                 </Border>
             </Grid>
@@ -46,14 +46,15 @@
                 <Expander.Header>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🗜" FontSize="12" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding CompactHeaderText}" FontSize="12" Foreground="#8A8F98"
+                        <TextBlock Text="{Binding CompactHeaderText}" FontSize="{DynamicResource ChatFontMuted}"
+                                   Foreground="#8A8F98"
                                    Margin="6,0,0,0" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Expander.Header>
                 <Border Background="#F7F7F8" BorderBrush="#E7EAED" BorderThickness="1"
                         CornerRadius="8" Padding="11,9" Margin="2,6,0,2">
-                    <TextBlock Text="{Binding Content}" Foreground="#6F7680" FontSize="12.5"
-                               TextWrapping="Wrap" LineHeight="19"/>
+                    <TextBlock Text="{Binding Content}" Foreground="#6F7680" FontSize="{DynamicResource ChatFontSecondary}"
+                               TextWrapping="Wrap" LineHeight="{DynamicResource ChatLineSecondary}"/>
                 </Border>
             </Expander>
         </DataTemplate>
@@ -76,18 +77,18 @@
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <TextBlock Text="💭" FontSize="12" VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding ThinkingLabel}" Margin="6,0,0,0"
-                                                   FontSize="12" Foreground="#8A8F98" VerticalAlignment="Center"/>
+                                                   FontSize="{DynamicResource ChatFontMuted}" Foreground="#8A8F98" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Expander.Header>
                                 <Border Background="#F7F7F8" CornerRadius="8" Padding="11,9" Margin="2,6,0,2">
-                                    <TextBlock Text="{Binding Reasoning}" Foreground="#6F7680" FontSize="12.5"
-                                               FontStyle="Italic" TextWrapping="Wrap" LineHeight="19"/>
+                                    <TextBlock Text="{Binding Reasoning}" Foreground="#6F7680" FontSize="{DynamicResource ChatFontSecondary}"
+                                               FontStyle="Italic" TextWrapping="Wrap" LineHeight="{DynamicResource ChatLineSecondary}"/>
                                 </Border>
                             </Expander>
                         </Border>
                         <!-- 正文(Markdown 渲染的块元素) -->
                         <ItemsControl ItemsSource="{Binding Blocks}"/>
-                        <TextBlock Text="正在生成…" Foreground="#9AA0A6" FontSize="12.5" Margin="0,2,0,0"
+                        <TextBlock Text="正在生成…" Foreground="#9AA0A6" FontSize="{DynamicResource ChatFontSecondary}" Margin="0,2,0,0"
                                    Visibility="{Binding ShowWaiting, Converter={StaticResource BoolToVis}}"/>
                     </StackPanel>
                 </Border>
@@ -129,12 +130,12 @@
                     </ContextMenu>
                 </Border.ContextMenu>
                 <StackPanel>
-                    <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
+                    <TextBlock Text="{Binding Title}" FontSize="{DynamicResource UiFontDefault}" FontWeight="SemiBold"
                                Foreground="#23272D" TextTrimming="CharacterEllipsis"/>
                     <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
                         <TextBlock Text="{Binding UpdatedAt, Converter={StaticResource TimeText}}"
-                                   FontSize="11" Foreground="#9AA0A6"/>
-                        <TextBlock Text="{Binding MessageCountText}" FontSize="11"
+                                   FontSize="{DynamicResource UiFontHint}" Foreground="#9AA0A6"/>
+                        <TextBlock Text="{Binding MessageCountText}" FontSize="{DynamicResource UiFontHint}"
                                    Foreground="#9AA0A6" Margin="8,0,0,0"/>
                     </StackPanel>
                 </StackPanel>
@@ -162,7 +163,7 @@
                 <Border Padding="18,16,14,8">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="💬" FontSize="17" VerticalAlignment="Center"/>
-                        <TextBlock Text=" 本地聊天" FontSize="15" FontWeight="Bold"
+                        <TextBlock Text=" 本地聊天" FontSize="{DynamicResource UiFontTitle}" FontWeight="Bold"
                                    VerticalAlignment="Center" Margin="4,0,0,0"/>
                     </StackPanel>
                 </Border>
@@ -186,7 +187,7 @@
 
                 <Border Grid.Row="3" Padding="16,8" BorderBrush="#ECEEF1" BorderThickness="0,1,0,0">
                     <TextBlock Text="{Binding Conversations.Count, StringFormat='{}{0} 个对话'}"
-                               FontSize="11" Foreground="#9AA0A6"/>
+                               FontSize="{DynamicResource UiFontHint}" Foreground="#9AA0A6"/>
                 </Border>
             </Grid>
         </Border>
@@ -226,8 +227,8 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="{Binding SelectedConversation.Title, FallbackValue=本地聊天, TargetNullValue=本地聊天}"
-                                       FontSize="14.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock FontSize="11" Foreground="#9AA0A6" Margin="0,2,0,0">
+                                       FontSize="{DynamicResource UiFontTitle}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock FontSize="{DynamicResource UiFontHint}" Foreground="#9AA0A6" Margin="0,2,0,0">
                                 <TextBlock.Text>
                                     <MultiBinding StringFormat="{}{0}  ·  上下文 {1} tokens">
                                         <Binding Path="SelectedModel" FallbackValue="未选择模型" TargetNullValue="未选择模型"/>
@@ -242,7 +243,7 @@
                                       ToolTip="选择模型"/>
                             <Button Style="{StaticResource IconButton}" FontFamily="Segoe MDL2 Assets"
                                     Content="&#xE713;" FontSize="14" Margin="8,0,0,0"
-                                    Command="{Binding OpenSettingsCommand}" ToolTip="模型服务设置"
+                                    Command="{Binding OpenSettingsCommand}" ToolTip="设置"
                                     VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
@@ -277,10 +278,10 @@
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                                 Visibility="{Binding SelectedConversation.Messages.Count, Converter={StaticResource ZeroCountToVis}}">
                         <TextBlock Text="💬" FontSize="46" HorizontalAlignment="Center"/>
-                        <TextBlock Text="开始新的对话" FontSize="16" FontWeight="SemiBold"
+                        <TextBlock Text="开始新的对话" FontSize="{DynamicResource UiFontHead}" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" Margin="0,12,0,0"/>
                         <TextBlock Text="在下方输入消息开始 · 点击右上角齿轮配置大模型服务"
-                                   FontSize="12.5" Foreground="#9AA0A6" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                                   FontSize="{DynamicResource UiFontSub}" Foreground="#9AA0A6" HorizontalAlignment="Center" Margin="0,6,0,0"/>
                     </StackPanel>
                 </Grid>
 
@@ -295,7 +296,7 @@
                         <TextBox x:Name="InputBox" BorderThickness="0" Background="Transparent"
                                  Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
                                  AcceptsReturn="True" TextWrapping="Wrap" MinHeight="46" MaxHeight="170"
-                                 VerticalScrollBarVisibility="Auto" Padding="14,11,14,4" FontSize="13.5"
+                                 VerticalScrollBarVisibility="Auto" Padding="14,11,14,4" FontSize="{DynamicResource ChatFontBody}"
                                  PreviewKeyDown="InputBox_PreviewKeyDown"
                                  ToolTip="Enter 发送 · Shift+Enter 换行"/>
                         <Grid Grid.Row="1" Margin="12,2,12,11">
@@ -308,15 +309,15 @@
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                 <ToggleButton IsChecked="{Binding ThinkingEnabled}"
                                               Style="{StaticResource Switch}" VerticalAlignment="Center"/>
-                                <TextBlock Text="思考" FontSize="12.5" Foreground="#374151"
+                                <TextBlock Text="思考" FontSize="{DynamicResource UiFontSub}" Foreground="#374151"
                                            Margin="8,0,0,0" VerticalAlignment="Center"/>
                                 <Button Style="{StaticResource GhostButton}" Command="{Binding CompactContextCommand}"
                                         ToolTip="把对话历史压缩为一条摘要,减少上下文占用" Margin="16,0,0,0"
-                                        Padding="10,5" FontSize="12" VerticalAlignment="Center">
+                                        Padding="10,5" FontSize="{DynamicResource UiFontSub}" VerticalAlignment="Center">
                                     <TextBlock Text="压缩上下文"/>
                                 </Button>
                             </StackPanel>
-                            <TextBlock Grid.Column="1" Text="生成中,可点击右侧按钮停止" FontSize="11.5"
+                            <TextBlock Grid.Column="1" Text="生成中,可点击右侧按钮停止" FontSize="{DynamicResource UiFontHint}"
                                        Foreground="#9AA0A6" VerticalAlignment="Center" Margin="16,0,0,0"
                                        Visibility="{Binding IsStreaming, Converter={StaticResource BoolToVis}}"/>
                             <!-- 上下文用量环:已用估算 / 模型窗口 -->

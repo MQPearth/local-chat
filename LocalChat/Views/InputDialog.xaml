@@ -4,7 +4,7 @@
         Title="输入" Width="400" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" Background="White"
         Icon="pack://application:,,,/app.ico"
-        FontFamily="Microsoft YaHei UI" FontSize="13" Foreground="#1F2328">
+        FontFamily="Microsoft YaHei UI" FontSize="{DynamicResource UiFontDefault}" Foreground="#1F2328">
     <StackPanel Margin="22,20,22,18">
         <TextBlock x:Name="PromptText" Text="请输入" FontWeight="Medium"/>
         <TextBox x:Name="ValueBox" Margin="0,12,0,0" PreviewKeyDown="ValueBox_PreviewKeyDown"/>

@@ -113,6 +113,13 @@ public class ChatMessageVM : ObservableObject
         Raise(nameof(ShowWaiting));
     }
 
+    /// <summary>字号设置变化后,清掉增量缓存并按新字号重建全部块。</summary>
+    public void RefreshFont()
+    {
+        _renderer.Reset();
+        _renderer.Update(Data.Content, Data.IsError);
+    }
+
     public void AppendReasoning(string piece)
     {
         if (!_streaming || piece.Length == 0) return; // 流结束后到达的迟到分片直接丢弃
@@ -440,6 +447,14 @@ public class MainViewModel : ObservableObject
 
         RebuildModelOptions();
 
+        // 字号设置变化时,按新字号重建所有会话消息的 Markdown 渲染
+        FontSettingsService.Instance.Changed += () =>
+        {
+            foreach (var c in Conversations)
+                foreach (var m in c.Messages)
+                    m.RefreshFont();
+        };
+
         NewChatCommand = new RelayCommand(_ => NewChat());
         SendCommand = new RelayCommand(_ => _ = SendAsync(),
             _ => !IsStreaming && !string.IsNullOrWhiteSpace(InputText));
@@ -620,10 +635,14 @@ public class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>打开设置窗口(左侧导航:显示设置/模型服务);关闭后统一落盘并刷新模型选项。</summary>
     private void OpenSettings()
     {
-        var w = new ProviderWindow(Settings) { Owner = Application.Current.MainWindow };
+        var w = new SettingsWindow(Settings) { Owner = Application.Current.MainWindow };
         w.ShowDialog();
+        // 显示设置页的字号即时生效在服务里,关闭窗口时同步回设置并保存
+        Settings.UiFontSize = FontSettingsService.Instance.UiFontSize;
+        Settings.ChatFontSize = FontSettingsService.Instance.ChatFontSize;
         Save();
         RebuildModelOptions();
     }

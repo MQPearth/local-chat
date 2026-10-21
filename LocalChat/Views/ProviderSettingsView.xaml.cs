@@ -7,23 +7,22 @@ using LocalChat.ViewModels;
 
 namespace LocalChat.Views;
 
-public partial class ProviderWindow : Window
+public partial class ProviderSettingsView : UserControl
 {
-    private readonly AppSettings _settings;
-    private readonly SettingsStore _store = new();
     private readonly ProviderSettingsVM _vm;
     private bool _loadingPwd;
 
-    public ProviderWindow(AppSettings settings)
+    public ProviderSettingsView(AppSettings settings)
     {
         InitializeComponent();
-        _settings = settings;
         _vm = new ProviderSettingsVM(settings);
         DataContext = _vm;
     }
 
     private ProviderVM? ProviderOf(ModelRowVM row) =>
         _vm.Providers.FirstOrDefault(p => p.Models.Contains(row));
+
+    private Window? HostWindow => Window.GetWindow(this);
 
     // ---------- 服务商 ----------
     private void AddProvider_Click(object sender, RoutedEventArgs e) => _vm.AddProvider();
@@ -41,7 +40,7 @@ public partial class ProviderWindow : Window
     private void DeleteProvider_Click(object sender, RoutedEventArgs e)
     {
         if (((FrameworkElement)sender).DataContext is not ProviderVM pv) return;
-        var r = MessageBox.Show(this, $"确定删除服务商「{pv.Name}」及其全部模型配置吗?", "删除服务商",
+        var r = MessageBox.Show(HostWindow, $"确定删除服务商「{pv.Name}」及其全部模型配置吗?", "删除服务商",
             MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (r != MessageBoxResult.Yes) return;
         _vm.RemoveProvider(pv);
@@ -51,7 +50,7 @@ public partial class ProviderWindow : Window
     private void AddModel_Click(object sender, RoutedEventArgs e)
     {
         if (((FrameworkElement)sender).DataContext is not ProviderVM pv) return;
-        var dlg = new ModelDialog(pv.Data, null) { Owner = this };
+        var dlg = new ModelDialog(pv.Data, null) { Owner = HostWindow };
         if (dlg.ShowDialog() == true && dlg.Result != null)
             pv.AddModel(dlg.Result);
     }
@@ -61,7 +60,7 @@ public partial class ProviderWindow : Window
         if (((FrameworkElement)sender).DataContext is not ModelRowVM row) return;
         var pv = ProviderOf(row);
         if (pv is null) return;
-        var dlg = new ModelDialog(pv.Data, row.Data) { Owner = this };
+        var dlg = new ModelDialog(pv.Data, row.Data) { Owner = HostWindow };
         if (dlg.ShowDialog() == true) row.Refresh();
     }
 
@@ -70,7 +69,7 @@ public partial class ProviderWindow : Window
         if (((FrameworkElement)sender).DataContext is not ModelRowVM row) return;
         var pv = ProviderOf(row);
         if (pv is null) return;
-        var r = MessageBox.Show(this, $"确定删除模型「{row.Id}」吗?", "删除模型",
+        var r = MessageBox.Show(HostWindow, $"确定删除模型「{row.Id}」吗?", "删除模型",
             MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (r == MessageBoxResult.Yes) pv.RemoveModel(row);
     }
@@ -86,7 +85,7 @@ public partial class ProviderWindow : Window
         try
         {
             var msg = await LlmClient.TestAsync(pv.Data, row.Data);
-            MessageBox.Show(this, msg, "测试连接", MessageBoxButton.OK,
+            MessageBox.Show(HostWindow, msg, "测试连接", MessageBoxButton.OK,
                 msg.StartsWith("✓") ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
         finally
@@ -124,13 +123,13 @@ public partial class ProviderWindow : Window
                 pv.AddModel(mc);
                 added++;
             }
-            MessageBox.Show(this,
+            MessageBox.Show(HostWindow,
                 added > 0 ? $"已拉取 {added} 个新模型。" : $"未发现新模型(服务端共 {ids.Count} 个)。",
                 "拉取模型", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
-            MessageBox.Show(this, "拉取失败:" + ex.Message, "拉取模型",
+            MessageBox.Show(HostWindow, "拉取失败:" + ex.Message, "拉取模型",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
@@ -179,12 +178,5 @@ public partial class ProviderWindow : Window
         }
     }
 
-    // ---------- 保存 ----------
-    private void SaveClose_Click(object sender, RoutedEventArgs e) => Close();
-
-    protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
-    {
-        base.OnClosing(e);
-        _store.Save(_settings);
-    }
+    private void SaveClose_Click(object sender, RoutedEventArgs e) => HostWindow?.Close();
 }

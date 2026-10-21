@@ -4,11 +4,11 @@
         Title="编辑模型配置" Width="470" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" Background="White"
         Icon="pack://application:,,,/app.ico"
-        FontFamily="Microsoft YaHei UI" FontSize="13" Foreground="#1F2328"
+        FontFamily="Microsoft YaHei UI" FontSize="{DynamicResource UiFontDefault}" Foreground="#1F2328"
         UseLayoutRounding="True">
     <StackPanel Margin="22,20,22,18">
         <Grid>
-            <TextBlock Text="编辑模型配置" FontSize="15" FontWeight="Bold"/>
+            <TextBlock Text="编辑模型配置" FontSize="{DynamicResource UiFontTitle}" FontWeight="Bold"/>
             <Button Style="{StaticResource IconButton}" Content="&#xE711;"
                     HorizontalAlignment="Right" Margin="0,-4,-6,0" Click="Close_Click"
                     ToolTip="关闭"/>
@@ -62,17 +62,17 @@
                 <TextBlock Text="高级配置" FontWeight="Medium"/>
             </Expander.Header>
             <StackPanel Margin="14,10,0,2">
-                <TextBlock Text="Temperature(越高越发散,0-2)" FontSize="12" Foreground="#6B7280"/>
+                <TextBlock Text="Temperature(越高越发散,0-2)" FontSize="{DynamicResource UiFontSub}" Foreground="#6B7280"/>
                 <TextBox x:Name="TempBox" Margin="0,4,0,0"/>
-                <TextBlock Text="Top P(0-1)" FontSize="12" Foreground="#6B7280" Margin="0,10,0,0"/>
+                <TextBlock Text="Top P(0-1)" FontSize="{DynamicResource UiFontSub}" Foreground="#6B7280" Margin="0,10,0,0"/>
                 <TextBox x:Name="TopPBox" Margin="0,4,0,0"/>
-                <TextBlock Text="系统提示词" FontSize="12" Foreground="#6B7280" Margin="0,10,0,0"/>
+                <TextBlock Text="系统提示词" FontSize="{DynamicResource UiFontSub}" Foreground="#6B7280" Margin="0,10,0,0"/>
                 <TextBox x:Name="SysBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64"
                          VerticalScrollBarVisibility="Auto" Margin="0,4,0,0"/>
             </StackPanel>
         </Expander>
 
-        <TextBlock x:Name="HintText" FontSize="12" Foreground="#8A8F98" Margin="0,12,0,0"
+        <TextBlock x:Name="HintText" FontSize="{DynamicResource UiFontSub}" Foreground="#8A8F98" Margin="0,12,0,0"
                    Visibility="Collapsed" TextWrapping="Wrap"/>
 
         <Grid Margin="0,18,0,0">

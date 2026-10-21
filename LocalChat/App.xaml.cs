@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using LocalChat.Services;
 
 namespace LocalChat;
 
@@ -11,6 +12,10 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // 主窗口创建前先把保存的显示字号写入全局资源
+        var s = new SettingsStore().Load();
+        FontSettingsService.Instance.Apply(s.UiFontSize, s.ChatFontSize);
 
         DispatcherUnhandledException += (_, args) =>
         {

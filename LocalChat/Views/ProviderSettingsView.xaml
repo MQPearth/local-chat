@@ -1,19 +1,24 @@
-<Window x:Class="LocalChat.Views.ProviderWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:models="clr-namespace:LocalChat.Models"
-        Title="模型服务设置" Width="680" Height="740" MinWidth="620" MinHeight="540"
-        WindowStartupLocation="CenterOwner" Background="#F7F8FA"
-        Icon="pack://application:,,,/app.ico"
-        FontFamily="Microsoft YaHei UI" FontSize="13" Foreground="#1F2328"
-        UseLayoutRounding="True">
+<UserControl x:Class="LocalChat.Views.ProviderSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:LocalChat.Models"
+             UseLayoutRounding="True">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16,8,6">
+        <Border Background="White" BorderBrush="#ECEEF1" BorderThickness="0,0,0,1" Padding="24,14">
+            <StackPanel>
+                <TextBlock Text="模型服务" FontSize="{DynamicResource UiFontTitle}" FontWeight="Bold"/>
+                <TextBlock Text="管理大模型服务商、接口地址与模型参数"
+                           FontSize="{DynamicResource UiFontSub}" Foreground="#8A8F98" Margin="0,3,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,16,8,6">
             <ItemsControl ItemsSource="{Binding Providers}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -47,14 +52,14 @@
                                     </Button>
                                 </Grid>
 
-                                <TextBlock Text="Base URL" FontSize="12" Foreground="#6B7280" Margin="0,12,0,4"/>
+                                <TextBlock Text="Base URL" FontSize="{DynamicResource UiFontSub}" Foreground="#6B7280" Margin="0,12,0,4"/>
                                 <TextBox Text="{Binding BaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                <TextBlock Text="API 格式" FontSize="12" Foreground="#6B7280" Margin="0,12,0,4"/>
+                                <TextBlock Text="API 格式" FontSize="{DynamicResource UiFontSub}" Foreground="#6B7280" Margin="0,12,0,4"/>
                                 <ComboBox SelectedIndex="{Binding FormatIndex}"
                                           ItemsSource="{x:Static models:ApiFormatNames.All}"/>
 
-                                <TextBlock Text="API Key(本地服务通常留空)" FontSize="12" Foreground="#6B7280"
+                                <TextBlock Text="API Key(本地服务通常留空)" FontSize="{DynamicResource UiFontSub}" Foreground="#6B7280"
                                            Margin="0,12,0,4"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -76,7 +81,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="模型列表" FontSize="12" Foreground="#6B7280"
+                                        <TextBlock Text="模型列表" FontSize="{DynamicResource UiFontSub}" Foreground="#6B7280"
                                                    VerticalAlignment="Center"/>
                                         <Button Style="{StaticResource IconButton}" Content="&#xE72C;" FontSize="11"
                                                 Margin="4,0,0,0" Click="FetchModels_Click" ToolTip="从服务拉取模型列表"/>
@@ -86,7 +91,7 @@
                                         <StackPanel Orientation="Horizontal">
                                             <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="10"
                                                        VerticalAlignment="Center"/>
-                                            <TextBlock Text=" 添加模型" FontSize="12"/>
+                                            <TextBlock Text=" 添加模型" FontSize="{DynamicResource UiFontSub}"/>
                                         </StackPanel>
                                     </Button>
                                 </Grid>
@@ -104,13 +109,13 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding Id}" FontWeight="Medium" FontSize="13"/>
+                                                        <TextBlock Text="{Binding Id}" FontWeight="Medium" FontSize="{DynamicResource UiFontDefault}"/>
                                                         <Border Background="#F1F2F5" CornerRadius="6" Padding="5,1"
                                                                 Margin="8,0,0,0" VerticalAlignment="Center">
                                                             <TextBlock Text="{Binding ContextWindow, Converter={StaticResource CtxBadge}}"
-                                                                       FontSize="10.5" Foreground="#6B7280"/>
+                                                                       FontSize="{DynamicResource UiFontHint}" Foreground="#6B7280"/>
                                                         </Border>
-                                                        <TextBlock Text="已停用" FontSize="11" Foreground="#B0B4BA"
+                                                        <TextBlock Text="已停用" FontSize="{DynamicResource UiFontHint}" Foreground="#B0B4BA"
                                                                    Margin="8,0,0,0"
                                                                    Visibility="{Binding Enabled, Converter={StaticResource BoolToVisInv}}"/>
                                                     </StackPanel>
@@ -135,7 +140,7 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <Border Grid.Row="1" Background="White" BorderBrush="#ECEEF1" BorderThickness="0,1,0,0" Padding="18,12">
+        <Border Grid.Row="2" Background="White" BorderBrush="#ECEEF1" BorderThickness="0,1,0,0" Padding="20,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -145,11 +150,11 @@
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="11"
                                    VerticalAlignment="Center"/>
-                        <TextBlock Text=" 添加服务商" FontSize="12.5"/>
+                        <TextBlock Text=" 添加服务商" FontSize="{DynamicResource UiFontSub}"/>
                     </StackPanel>
                 </Button>
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <TextBlock Text="修改即时生效,关闭窗口自动保存" FontSize="11.5" Foreground="#9AA0A6"
+                    <TextBlock Text="修改即时生效,关闭设置窗口自动保存" FontSize="{DynamicResource UiFontHint}" Foreground="#9AA0A6"
                                VerticalAlignment="Center" Margin="0,0,14,0"/>
                     <Button Style="{StaticResource PrimaryButton}" Padding="20,7" Content="保存并关闭"
                             Click="SaveClose_Click"/>
@@ -157,4 +162,4 @@
             </Grid>
         </Border>
     </Grid>
-</Window>
+</UserControl>

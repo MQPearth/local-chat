@@ -19,6 +19,12 @@ public static class MarkdownRenderer
 
     private static Brush Hex(string s) => new SolidColorBrush((Color)ColorConverter.ConvertFromString(s));
 
+    /// <summary>当前聊天区字号设置。</summary>
+    private static double Chat => FontSettingsService.Instance.ChatFontSize;
+
+    /// <summary>按聊天区字号设置换算实际字号(以 13.5 为基准等比,设置等于基准时保持原始视觉)。</summary>
+    private static double S(double baseSize) => Math.Round(Chat * baseSize / FontSettingsService.ChatBase, 1);
+
     /// <summary>渲染单个块为 UI 元素(增量渲染按块调用)。</summary>
     /// <param name="error">整条消息为错误提示时,正文以红色显示。</param>
     public static UIElement RenderBlock(MdBlock b, bool error = false) => b switch
@@ -43,8 +49,8 @@ public static class MarkdownRenderer
     private static TextBlock BaseText(bool error = false) => new()
     {
         Foreground = error ? ErrorBrush : Hex("#1F2328"),
-        FontSize = 13.5,
-        LineHeight = 21,
+        FontSize = Chat,
+        LineHeight = S(21),
         TextWrapping = TextWrapping.Wrap
     };
 
@@ -52,7 +58,7 @@ public static class MarkdownRenderer
     {
         var tb = BaseText();
         tb.FontWeight = FontWeights.Bold;
-        tb.FontSize = h.Level switch { 1 => 19.0, 2 => 17.0, 3 => 15.5, _ => 14.0 };
+        tb.FontSize = h.Level switch { 1 => S(19.0), 2 => S(17.0), 3 => S(15.5), _ => S(14.0) };
         tb.LineHeight = tb.FontSize * 1.45;
         tb.Margin = new Thickness(0, h.Level <= 2 ? 10 : 8, 0, 4);
         AddInlines(tb, h.Inlines);
@@ -75,7 +81,7 @@ public static class MarkdownRenderer
             sp.Children.Add(new TextBlock
             {
                 Text = c.Lang,
-                FontSize = 11,
+                FontSize = S(11),
                 Foreground = MutedBrush,
                 Margin = new Thickness(0, 0, 0, 4)
             });
@@ -83,8 +89,8 @@ public static class MarkdownRenderer
         {
             Text = c.Code,
             FontFamily = new FontFamily("Consolas"),
-            FontSize = 12.5,
-            LineHeight = 19,
+            FontSize = S(12.5),
+            LineHeight = S(19),
             Foreground = Hex("#24292F"),
             TextWrapping = TextWrapping.Wrap
         });
@@ -122,8 +128,8 @@ public static class MarkdownRenderer
         {
             Text = it.Marker + " ",
             Foreground = MutedBrush,
-            FontSize = 13.5,
-            LineHeight = 21,
+            FontSize = Chat,
+            LineHeight = S(21),
             VerticalAlignment = VerticalAlignment.Top
         });
         var tb = BaseText();
@@ -156,7 +162,7 @@ public static class MarkdownRenderer
                 Padding = new Thickness(8, 5, 8, 5)
             };
             var text = BaseText();
-            text.FontSize = 12.5;
+            text.FontSize = S(12.5);
             if (bold) text.FontWeight = FontWeights.Bold;
             if (c < cells.Count) AddInlines(text, cells[c]);
             border.Child = text;
@@ -188,7 +194,7 @@ public static class MarkdownRenderer
         if (r.Code)
         {
             run.FontFamily = new FontFamily("Consolas");
-            run.FontSize = 12.5;
+            run.FontSize = S(12.5);
             run.Background = InlineCodeBg;
         }
         return run;

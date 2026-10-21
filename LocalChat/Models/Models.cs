@@ -73,6 +73,8 @@ public class AppSettings
     public string? CurrentProviderId { get; set; }
     public string? CurrentModelId { get; set; }
     public bool ThinkingEnabled { get; set; }
+    public double UiFontSize { get; set; } = Defaults.UiFontSize;
+    public double ChatFontSize { get; set; } = Defaults.ChatFontSize;
     public double WindowWidth { get; set; }
     public double WindowHeight { get; set; }
     public bool WindowMaximized { get; set; }
@@ -80,6 +82,11 @@ public class AppSettings
 
 public static class Defaults
 {
+    /// <summary>界面字体大小默认值,同时是界面档位字号的换算基准。</summary>
+    public const double UiFontSize = 13.0;
+    /// <summary>聊天区字体大小默认值,同时是聊天档位字号的换算基准。</summary>
+    public const double ChatFontSize = 13.5;
+
     public static AppSettings Create() => new()
     {
         Providers =

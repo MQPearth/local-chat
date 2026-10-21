@@ -1,0 +1,68 @@
+<Window x:Class="LocalChat.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="设置" Width="920" Height="700" MinWidth="800" MinHeight="580"
+        WindowStartupLocation="CenterOwner" Background="#F7F8FA"
+        Icon="pack://application:,,,/app.ico"
+        FontFamily="Microsoft YaHei UI" FontSize="{DynamicResource UiFontDefault}" Foreground="#1F2328"
+        UseLayoutRounding="True">
+    <Window.Resources>
+        <!-- 设置导航项:加高条目、宽松内边距,选中态加深加粗 -->
+        <Style x:Key="SettingsNavItem" TargetType="ListBoxItem">
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Foreground" Value="#3C4148"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="9"
+                                Padding="14,10" Margin="8,3">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F4F5F7"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#EBECEF"/>
+                                <Setter Property="Foreground" Value="#171717"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="216"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- 左侧设置项导航 -->
+        <Border Background="White" BorderBrush="#ECEEF1" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Padding="20,20,16,16">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="32" Height="32" Background="#F1F2F5" CornerRadius="9">
+                            <TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="14"
+                                       Foreground="#374151" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="设置" FontSize="{DynamicResource UiFontTitle}" FontWeight="Bold"
+                                   Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                <ListBox x:Name="NavList" SelectionChanged="NavList_SelectionChanged"
+                         Padding="6,0,6,12" Background="Transparent"
+                         ItemContainerStyle="{StaticResource SettingsNavItem}">
+                    <ListBoxItem Content="显示设置" ToolTip="字体大小等显示选项"/>
+                    <ListBoxItem Content="模型服务" ToolTip="服务商与模型配置"/>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- 右侧设置内容 -->
+        <ContentControl x:Name="ContentHost" Grid.Column="1" Focusable="False"/>
+    </Grid>
+</Window>
