@@ -1,6 +1,6 @@
 # 本地聊天 (LocalChat)
 
-一个简洁的 Windows 本地聊天应用(WPF / .NET 9),可接入任意大模型服务,支持流式输出与深度思考展示。
+一个简洁的本地聊天应用,包含 Windows 桌面端(WPF / .NET 9)与 Android 端(Kotlin / Jetpack Compose),可接入任意大模型服务,支持流式输出与深度思考展示。
 
 ## 功能
 
@@ -25,19 +25,59 @@
 
 | 文件 | 说明 |
 | --- | --- |
-| `LocalChat-*-win-x64-portable.zip` | 自包含单文件,解压即用,无需安装运行时 |
-| `LocalChat-*-win-x64.zip` | 体积更小,需安装 [.NET 9 桌面运行时](https://dotnet.microsoft.com/download/dotnet/9.0) |
+| `LocalChat-*-win-x64-portable.zip` | Windows 自包含单文件,解压即用,无需安装运行时 |
+| `LocalChat-*-win-x64.zip` | Windows 体积更小,需安装 [.NET 9 桌面运行时](https://dotnet.microsoft.com/download/dotnet/9.0) |
+| `LocalChat-*-android.apk` | Android 正式版,配置签名 Secrets 后已签名,可直接安装与覆盖升级 |
+| `LocalChat-*-android-debug.apk` | Android 调试签名版,可直接安装(正式签名包不可用时的备用) |
 
 ## 本地构建
 
-需要 [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)(或 Visual Studio 2022):
+Windows 桌面端需要 [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)(或 Visual Studio 2022):
 
 ```bash
 dotnet build LocalChat/LocalChat.csproj -c Release
 dotnet publish LocalChat/LocalChat.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
 ```
 
-也可以在 GitHub 的 **Actions → Release → Run workflow** 手动触发构建并自动发布 Release。
+Android 端需要 JDK 17 与 Android SDK,在 `LocalChat-Android` 目录下:
+
+```bash
+gradle assembleDebug   # 产物:app/build/outputs/apk/debug/app-debug.apk
+```
+
+也可以在 GitHub 的 **Actions → Release → Run workflow** 手动触发一次构建,同时产出 Windows 与 Android 两端编译产物并自动发布 Release。
+
+## 发布签名(Android)
+
+CI 通过环境变量读取签名密钥,需在仓库 **Settings → Secrets and variables → Actions** 配置四个 Secret:
+
+| Secret 名 | 内容 |
+| --- | --- |
+| `ANDROID_KEYSTORE_BASE64` | keystore 文件的 base64 内容 |
+| `ANDROID_KEYSTORE_PASSWORD` | keystore 密码 |
+| `ANDROID_KEY_ALIAS` | 密钥别名 |
+| `ANDROID_KEY_PASSWORD` | key 密码 |
+
+本地生成 keystore(只需一次,务必妥善备份,丢失后无法再向老用户推送覆盖升级)。keytool 会给出"PKCS12 密钥库不支持其他存储和密钥口令"的警告并忽略 `-keypass`,属正常现象:PKCS12 只用一个密码,两个密码 Secret 填同一个值即可:
+
+```bash
+keytool -genkeypair -v -keystore localchat-release.jks -alias localchat -keyalg RSA -keysize 2048 -validity 10000 \
+  -storepass 你的密码 -keypass 你的密码 \
+  -dname "CN=LocalChat, O=LocalChat, C=CN"
+```
+
+获取 base64 内容填入 Secret:
+
+```bash
+# Linux / macOS / Git Bash
+base64 -w0 localchat-release.jks
+
+# Windows CMD / PowerShell
+certutil -encode localchat-release.jks encoded.txt   # 取正文 BEGIN/END 之间的内容
+```
+
+> 未配置这些 Secrets 时 CI 照常运行,只是 release APK 为未签名包;本地构建不受任何影响。
+> keystore 文件本身不要提交进仓库(已在 .gitignore 中忽略 `*.jks` / `*.keystore`)。
 
 ## 使用
 

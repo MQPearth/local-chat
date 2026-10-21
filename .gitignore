@@ -1,10 +1,13 @@
-# ===== 构建产物 =====
+# ===== 构建产物(.NET) =====
 [Bb]in/
 [Oo]bj/
 [Oo]ut/
+[Aa]rtifacts/
 [Ll]og/
 [Ll]ogs/
 publish/
+*.binlog
+msbuild.log
 
 # ===== Visual Studio =====
 .vs/
@@ -46,6 +49,21 @@ project.lock.json
 __pycache__/
 *.py[cod]
 .venv/
+
+# ===== Android / Gradle(LocalChat-Android) =====
+.gradle/
+build/
+local.properties
+captures/
+.kotlin/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.keystore
+*.jks
+*.hprof
 
 # ===== 其他 =====
 *.DS_Store

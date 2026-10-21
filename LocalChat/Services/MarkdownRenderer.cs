@@ -19,11 +19,9 @@ public static class MarkdownRenderer
 
     private static Brush Hex(string s) => new SolidColorBrush((Color)ColorConverter.ConvertFromString(s));
 
+    /// <summary>渲染单个块为 UI 元素(增量渲染按块调用)。</summary>
     /// <param name="error">整条消息为错误提示时,正文以红色显示。</param>
-    public static List<UIElement> Build(string markdown, bool error = false) =>
-        MarkdownParser.Parse(markdown).Select(b => Block(b, error)).ToList();
-
-    private static UIElement Block(MdBlock b, bool error) => b switch
+    public static UIElement RenderBlock(MdBlock b, bool error = false) => b switch
     {
         MdCode c => CodeBlock(c),
         MdHeading h => Heading(h),

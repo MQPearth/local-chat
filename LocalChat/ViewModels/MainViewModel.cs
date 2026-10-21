@@ -24,6 +24,10 @@ public class ModelOption
 
 public class ChatMessageVM : ObservableObject
 {
+    private readonly IncrementalMarkdownRenderer _renderer = new();
+    private readonly StreamPacer _pacer;
+    private readonly System.Text.StringBuilder _contentBuf = new();
+    private readonly System.Text.StringBuilder _reasonBuf = new();
     private bool _streaming;
     private DateTime? _reasonStart;
     private DateTime? _reasonEnd;
@@ -35,8 +39,12 @@ public class ChatMessageVM : ObservableObject
     {
         Data = data;
         _streaming = streaming;
-        RebuildBlocks();
+        _pacer = new StreamPacer(Flush);
+        _renderer.Update(Data.Content, Data.IsError); // 历史消息一次性完整渲染
     }
+
+    /// <summary>一次节流刷新完成(滚动跟随等视图副作用挂在这里,避免每个分片都触发)。</summary>
+    public event Action? Flushed;
 
     public ChatMessageData Data { get; }
 
@@ -69,8 +77,8 @@ public class ChatMessageVM : ObservableObject
     public string CompactHeaderText =>
         Data.Role == "compact" ? $"已压缩 {Data.CompactedCount} 条历史消息,点击查看摘要" : "";
 
-    /// <summary>正文按 Markdown 渲染出的块级元素(随流式输出整体重建)。</summary>
-    public List<System.Windows.UIElement> Blocks { get; private set; } = new();
+    /// <summary>正文按 Markdown 渲染出的块级元素(流式输出时增量更新,只重建变化块)。</summary>
+    public ObservableCollection<System.Windows.UIElement> Blocks => _renderer.Blocks;
 
     /// <summary>本条回复产生的原始 HTTP 记录(含失败重试,会有多条)。</summary>
     public List<HttpExchange> HttpLog { get; } = new();
@@ -107,21 +115,20 @@ public class ChatMessageVM : ObservableObject
 
     public void AppendReasoning(string piece)
     {
-        if (piece.Length == 0) return;
+        if (!_streaming || piece.Length == 0) return; // 流结束后到达的迟到分片直接丢弃
         if (_reasonStart is null)
         {
             _reasonStart = DateTime.Now;
             if (!_thinkingTouchedByUser) SetThinking(true); // 思考中自动展开,直播推理过程
             Raise(nameof(ShowWaiting));
         }
-        Data.Reasoning += piece;
-        Raise(nameof(Reasoning));
-        Raise(nameof(ThinkingLabel));
+        _reasonBuf.Append(piece);
+        _pacer.Touch();
     }
 
     public void AppendContent(string piece)
     {
-        if (piece.Length == 0) return;
+        if (!_streaming || piece.Length == 0) return;
         if (!_contentStarted)
         {
             _contentStarted = true;
@@ -131,14 +138,13 @@ public class ChatMessageVM : ObservableObject
             SetThinking(false); // 思考结束,自动折叠思考块
             Raise(nameof(ShowWaiting));
         }
-        Data.Content += piece;
-        Raise(nameof(Content));
-        RebuildBlocks();
-        Raise(nameof(ThinkingLabel));
+        _contentBuf.Append(piece);
+        _pacer.Touch();
     }
 
     public void Finish(bool cancelled = false)
     {
+        _pacer.Complete(); // 先落盘缓冲中的分片,收尾文本才能接在完整正文之后
         if (cancelled)
             AppendContentRaw(Data.Content.Length == 0 && Data.Reasoning.Length == 0 ? "(已停止)" : "\n\n(已停止)");
         EndStream();
@@ -146,6 +152,7 @@ public class ChatMessageVM : ObservableObject
 
     public void Fail(string msg)
     {
+        _pacer.Complete();
         if (Data.Content.Length == 0 && Data.Reasoning.Length == 0)
         {
             Data.IsError = true;
@@ -165,6 +172,7 @@ public class ChatMessageVM : ObservableObject
         if (Data.ReasonSeconds <= 0 && _reasonStart is { } rs)
             Data.ReasonSeconds = ((_reasonEnd ?? DateTime.Now) - rs).TotalSeconds;
         _streaming = false;
+        _pacer.Complete(); // 停表并做兜底刷新(Finish/Fail 已刷新过时为空操作)
         Raise(nameof(IsStreaming));
         Raise(nameof(ShowWaiting));
         Raise(nameof(ThinkingLabel));
@@ -174,15 +182,32 @@ public class ChatMessageVM : ObservableObject
     {
         Data.Content += s;
         Raise(nameof(Content));
-        RebuildBlocks();
+        _renderer.Update(Data.Content, Data.IsError);
     }
 
-    private void RebuildBlocks()
+    /// <summary>把缓冲的流式分片并入数据模型并增量渲染(StreamPacer 定时/收尾调用,UI 线程)。</summary>
+    private void Flush()
     {
-        Blocks = Data.Content.Length == 0
-            ? new List<System.Windows.UIElement>()
-            : MarkdownRenderer.Build(Data.Content, Data.IsError);
-        Raise(nameof(Blocks));
+        var hasContent = _contentBuf.Length > 0;
+        if (hasContent)
+        {
+            Data.Content += _contentBuf.ToString();
+            _contentBuf.Clear();
+        }
+        if (_reasonBuf.Length > 0)
+        {
+            Data.Reasoning += _reasonBuf.ToString();
+            _reasonBuf.Clear();
+            Raise(nameof(Reasoning));
+        }
+        if (hasContent)
+        {
+            Raise(nameof(Content));
+            _renderer.Update(Data.Content, Data.IsError);
+        }
+        Raise(nameof(ShowWaiting));
+        Raise(nameof(ThinkingLabel));
+        Flushed?.Invoke();
     }
 }
 
@@ -521,6 +546,7 @@ public class MainViewModel : ObservableObject
         InputText = "";
 
         var reply = conv.AddAssistant();
+        reply.Flushed += () => Streamed?.Invoke(); // 滚动跟随挂在节流刷新上
         IsStreaming = true;
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
@@ -532,8 +558,8 @@ public class MainViewModel : ObservableObject
         {
             await Task.Run(() => LlmClient.StreamAsync(opt.Provider, opt.Model, turns,
                 opt.Model.SystemPrompt, ThinkingEnabled,
-                s => Post(() => { reply.AppendContent(s); Streamed?.Invoke(); }),
-                s => Post(() => { reply.AppendReasoning(s); Streamed?.Invoke(); }),
+                s => Post(() => reply.AppendContent(s)),
+                s => Post(() => reply.AppendReasoning(s)),
                 token, reply.HttpLog), token);
             reply.Finish();
         }

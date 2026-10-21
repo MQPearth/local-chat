@@ -248,4 +248,25 @@ public static class MarkdownParser
         if (t.Length == 0 || !t.Contains('-')) return false;
         return t.Replace("|", "").Replace("-", "").Replace(":", "").Replace(" ", "").Length == 0;
     }
+
+    /// <summary>块的规范化键(增量渲染用):两个块键相同即视为内容相同,可复用已渲染的 UI 元素。</summary>
+    public static string BlockKey(MdBlock b) => b switch
+    {
+        MdCode c => "c|" + c.Lang + "|" + c.Code,
+        MdHeading h => "h" + h.Level + "|" + InlineKey(h.Inlines),
+        MdRule => "r",
+        MdQuote q => "q|" + InlineKey(q.Inlines),
+        MdItem it => "i" + it.Level + "|" + it.Marker + "|" + InlineKey(it.Inlines),
+        MdTable t => "t|" + string.Join("\u0001", t.Header.Select(InlineKey)) +
+                     string.Concat(t.Rows.Select(r => "\u0002" + string.Join("\u0001", r.Select(InlineKey)))),
+        _ => "p|" + InlineKey(((MdParagraph)b).Inlines),
+    };
+
+    private static string InlineKey(IReadOnlyList<MdInline> inlines) => string.Concat(inlines.Select(i => i switch
+    {
+        MdRun r => (r.Bold ? "B" : "") + (r.Italic ? "I" : "") + (r.Strike ? "S" : "") +
+                   (r.Code ? "C" : "") + r.Text + "\u0001",
+        MdLink l => "L" + l.Text + "\u0001" + l.Url + "\u0001",
+        _ => "\u0001",
+    }));
 }
