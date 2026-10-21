@@ -1,0 +1,92 @@
+<Window x:Class="LocalChat.Views.ModelDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="编辑模型配置" Width="470" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" Background="White"
+        Icon="pack://application:,,,/app.ico"
+        FontFamily="Microsoft YaHei UI" FontSize="13" Foreground="#1F2328"
+        UseLayoutRounding="True">
+    <StackPanel Margin="22,20,22,18">
+        <Grid>
+            <TextBlock Text="编辑模型配置" FontSize="15" FontWeight="Bold"/>
+            <Button Style="{StaticResource IconButton}" Content="&#xE711;"
+                    HorizontalAlignment="Right" Margin="0,-4,-6,0" Click="Close_Click"
+                    ToolTip="关闭"/>
+        </Grid>
+
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="智能配置" FontWeight="Medium"/>
+                <Border Width="15" Height="15" BorderBrush="#C3C7CD" BorderThickness="1"
+                        CornerRadius="8" Margin="6,0,0,0" VerticalAlignment="Center"
+                        ToolTip="开启后尝试从服务端自动获取模型上下文长度并填充参数(目前支持 Ollama)">
+                    <TextBlock Text="?" FontSize="9.5" Foreground="#8A8F98"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+            </StackPanel>
+            <ToggleButton x:Name="SmartToggle" Grid.Column="1" Style="{StaticResource Switch}"
+                          IsChecked="True" Checked="Smart_Changed" Unchecked="Smart_Changed"/>
+        </Grid>
+
+        <TextBlock Text="模型 ID" Margin="0,14,0,4"/>
+        <TextBox x:Name="ModelIdBox" LostFocus="ModelId_LostFocus"/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,12,0,4">
+            <TextBlock Text="上下文窗口" VerticalAlignment="Center"/>
+            <Border Width="15" Height="15" BorderBrush="#C3C7CD" BorderThickness="1"
+                    CornerRadius="8" Margin="6,0,0,0" VerticalAlignment="Center"
+                    ToolTip="模型可处理的最大上下文长度(tokens)">
+                <TextBlock Text="?" FontSize="9.5" Foreground="#8A8F98"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </StackPanel>
+        <TextBox x:Name="CtxBox"/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,12,0,4">
+            <TextBlock Text="最大输出 Token" VerticalAlignment="Center"/>
+            <Border Width="15" Height="15" BorderBrush="#C3C7CD" BorderThickness="1"
+                    CornerRadius="8" Margin="6,0,0,0" VerticalAlignment="Center"
+                    ToolTip="单次回复允许的最大输出长度(tokens)">
+                <TextBlock Text="?" FontSize="9.5" Foreground="#8A8F98"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </StackPanel>
+        <TextBox x:Name="MaxBox"/>
+
+        <Expander Style="{StaticResource CleanExpander}" Margin="0,14,0,0">
+            <Expander.Header>
+                <TextBlock Text="高级配置" FontWeight="Medium"/>
+            </Expander.Header>
+            <StackPanel Margin="14,10,0,2">
+                <TextBlock Text="Temperature(越高越发散,0-2)" FontSize="12" Foreground="#6B7280"/>
+                <TextBox x:Name="TempBox" Margin="0,4,0,0"/>
+                <TextBlock Text="Top P(0-1)" FontSize="12" Foreground="#6B7280" Margin="0,10,0,0"/>
+                <TextBox x:Name="TopPBox" Margin="0,4,0,0"/>
+                <TextBlock Text="系统提示词" FontSize="12" Foreground="#6B7280" Margin="0,10,0,0"/>
+                <TextBox x:Name="SysBox" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="64"
+                         VerticalScrollBarVisibility="Auto" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Expander>
+
+        <TextBlock x:Name="HintText" FontSize="12" Foreground="#8A8F98" Margin="0,12,0,0"
+                   Visibility="Collapsed" TextWrapping="Wrap"/>
+
+        <Grid Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Style="{StaticResource LinkButton}" Content="重置表单"
+                    HorizontalAlignment="Left" Click="Reset_Click"/>
+            <Button Grid.Column="1" Style="{StaticResource GhostButton}" Content="取消"
+                    Click="Close_Click" MinWidth="74" Padding="0,7"/>
+            <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Content="保存"
+                    Click="Save_Click" MinWidth="74" Padding="0,7" Margin="10,0,0,0"/>
+        </Grid>
+    </StackPanel>
+</Window>

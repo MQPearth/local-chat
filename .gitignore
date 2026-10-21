@@ -1,0 +1,53 @@
+# ===== 构建产物 =====
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+publish/
+
+# ===== Visual Studio =====
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.pidb
+*.svclog
+
+# ===== 发布 / 打包 =====
+*.publish.xml
+*.pubxml.user
+*.azurePubxml
+AppPackages/
+
+# ===== 测试 =====
+[Tt]est[Rr]esult*/
+TestResult.xml
+
+# ===== NuGet =====
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# ===== Rider / VS Code =====
+.idea/
+*.sln.iml
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# ===== Python(tools/gen_icon.py) =====
+__pycache__/
+*.py[cod]
+.venv/
+
+# ===== 其他 =====
+*.DS_Store
+Thumbs.db
+crash.log

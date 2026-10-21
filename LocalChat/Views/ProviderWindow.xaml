@@ -1,0 +1,160 @@
+<Window x:Class="LocalChat.Views.ProviderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:LocalChat.Models"
+        Title="模型服务设置" Width="680" Height="740" MinWidth="620" MinHeight="540"
+        WindowStartupLocation="CenterOwner" Background="#F7F8FA"
+        Icon="pack://application:,,,/app.ico"
+        FontFamily="Microsoft YaHei UI" FontSize="13" Foreground="#1F2328"
+        UseLayoutRounding="True">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16,8,6">
+            <ItemsControl ItemsSource="{Binding Providers}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="White" BorderBrush="#E7E9EC" BorderThickness="1"
+                                CornerRadius="12" Padding="16,14" Margin="0,0,8,14" Loaded="Card_Loaded">
+                            <StackPanel>
+                                <!-- 卡片头:名称 + 启用开关 + 更多 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="📦" FontSize="15" VerticalAlignment="Center"/>
+                                        <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource FlatTextBox}" MinWidth="120"
+                                                 Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <ToggleButton Grid.Column="1" IsChecked="{Binding Enabled}"
+                                                  Style="{StaticResource Switch}" VerticalAlignment="Center"
+                                                  ToolTip="启用/停用该服务商"/>
+                                    <Button Grid.Column="2" Style="{StaticResource IconButton}"
+                                            Content="&#xE712;" FontSize="13" Margin="4,0,0,0"
+                                            Click="ProviderMore_Click" ToolTip="更多操作">
+                                        <Button.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="删除服务商" Click="DeleteProvider_Click"/>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                    </Button>
+                                </Grid>
+
+                                <TextBlock Text="Base URL" FontSize="12" Foreground="#6B7280" Margin="0,12,0,4"/>
+                                <TextBox Text="{Binding BaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                <TextBlock Text="API 格式" FontSize="12" Foreground="#6B7280" Margin="0,12,0,4"/>
+                                <ComboBox SelectedIndex="{Binding FormatIndex}"
+                                          ItemsSource="{x:Static models:ApiFormatNames.All}"/>
+
+                                <TextBlock Text="API Key(本地服务通常留空)" FontSize="12" Foreground="#6B7280"
+                                           Margin="0,12,0,4"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <PasswordBox x:Name="PwdBox" PasswordChanged="PwdBox_PasswordChanged"/>
+                                    <TextBox x:Name="RevealBox" Visibility="Collapsed"
+                                             Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <ToggleButton x:Name="EyeBtn" Grid.Column="1" Style="{StaticResource IconToggle}"
+                                                  Content="&#xE7B3;" Click="EyeBtn_Click" Margin="6,0,0,0"
+                                                  ToolTip="显示/隐藏 API Key"/>
+                                </Grid>
+
+                                <!-- 模型列表 -->
+                                <Grid Margin="0,14,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="模型列表" FontSize="12" Foreground="#6B7280"
+                                                   VerticalAlignment="Center"/>
+                                        <Button Style="{StaticResource IconButton}" Content="&#xE72C;" FontSize="11"
+                                                Margin="4,0,0,0" Click="FetchModels_Click" ToolTip="从服务拉取模型列表"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Style="{StaticResource GhostButton}" Padding="10,5"
+                                            Click="AddModel_Click">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="10"
+                                                       VerticalAlignment="Center"/>
+                                            <TextBlock Text=" 添加模型" FontSize="12"/>
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <ItemsControl ItemsSource="{Binding Models}" Margin="0,6,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#EDEFF2" BorderThickness="0,0,0,1" Padding="2,7">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Id}" FontWeight="Medium" FontSize="13"/>
+                                                        <Border Background="#F1F2F5" CornerRadius="6" Padding="5,1"
+                                                                Margin="8,0,0,0" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding ContextWindow, Converter={StaticResource CtxBadge}}"
+                                                                       FontSize="10.5" Foreground="#6B7280"/>
+                                                        </Border>
+                                                        <TextBlock Text="已停用" FontSize="11" Foreground="#B0B4BA"
+                                                                   Margin="8,0,0,0"
+                                                                   Visibility="{Binding Enabled, Converter={StaticResource BoolToVisInv}}"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Style="{StaticResource IconButton}"
+                                                            Content="&#xE768;" Click="TestModel_Click" ToolTip="测试连接"/>
+                                                    <Button Grid.Column="2" Style="{StaticResource IconButton}"
+                                                            Content="&#xE70F;" Click="EditModel_Click" ToolTip="编辑模型"/>
+                                                    <Button Grid.Column="3" Style="{StaticResource IconButton}"
+                                                            Content="&#xE74D;" Click="DeleteModel_Click" ToolTip="删除模型"/>
+                                                    <ToggleButton Grid.Column="4" IsChecked="{Binding Enabled}"
+                                                                  Style="{StaticResource Switch}" Margin="6,0,0,0"
+                                                                  ToolTip="启用/停用"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" Background="White" BorderBrush="#ECEEF1" BorderThickness="0,1,0,0" Padding="18,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Click="AddProvider_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="11"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text=" 添加服务商" FontSize="12.5"/>
+                    </StackPanel>
+                </Button>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="修改即时生效,关闭窗口自动保存" FontSize="11.5" Foreground="#9AA0A6"
+                               VerticalAlignment="Center" Margin="0,0,14,0"/>
+                    <Button Style="{StaticResource PrimaryButton}" Padding="20,7" Content="保存并关闭"
+                            Click="SaveClose_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
