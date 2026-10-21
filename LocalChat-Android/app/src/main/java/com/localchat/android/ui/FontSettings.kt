@@ -30,8 +30,14 @@ object FontSettings {
 /** 界面文字字号:基准值 × (界面字号 / 13)。 */
 fun uiFont(base: Double): TextUnit = scaled(base, FontSettings.uiFontSize, FontSettings.UiBase)
 
+/** 界面文字字号,接受整数字面量基准值。 */
+fun uiFont(base: Int): TextUnit = uiFont(base.toDouble())
+
 /** 聊天区文字字号:基准值 × (聊天字号 / 13.5)。 */
 fun chatFont(base: Double): TextUnit = scaled(base, FontSettings.chatFontSize, FontSettings.ChatBase)
+
+/** 聊天区文字字号,接受整数字面量基准值。 */
+fun chatFont(base: Int): TextUnit = chatFont(base.toDouble())
 
 /** 换算并四舍五入到 0.1,避免浮点噪声(与桌面版一致)。 */
 private fun scaled(base: Double, current: Double, baseRef: Double): TextUnit =
