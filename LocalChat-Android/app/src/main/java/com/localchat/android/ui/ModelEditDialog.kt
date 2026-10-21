@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.localchat.android.data.ApiFormat
 import com.localchat.android.data.ModelConfig
 import com.localchat.android.data.ProviderConfig
@@ -93,7 +92,7 @@ fun ModelEditDialog(
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(checked = smart, onCheckedChange = { smart = it }, modifier = Modifier.scale(0.7f))
-                    Text("自动获取上下文(仅 Ollama)", fontSize = 12.sp, color = Color(0xFF6B7280), modifier = Modifier.padding(start = 4.dp))
+                    Text("自动获取上下文(仅 Ollama)", fontSize = uiFont(12), color = Color(0xFF6B7280), modifier = Modifier.padding(start = 4.dp))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -118,16 +117,16 @@ fun ModelEditDialog(
                 OutlinedTextField(
                     value = sys, onValueChange = { sys = it },
                     label = { Text("系统提示词(可选)") }, maxLines = 3,
-                    textStyle = TextStyle(fontSize = 13.5.sp),
+                    textStyle = TextStyle(fontSize = uiFont(13.5)),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(checked = enabled, onCheckedChange = { enabled = it }, modifier = Modifier.scale(0.7f))
-                    Text("启用", fontSize = 12.sp, color = Color(0xFF6B7280), modifier = Modifier.padding(start = 4.dp))
+                    Text("启用", fontSize = uiFont(12), color = Color(0xFF6B7280), modifier = Modifier.padding(start = 4.dp))
                 }
                 if (hintText.isNotEmpty()) {
                     Text(
-                        hintText, fontSize = 12.sp,
+                        hintText, fontSize = uiFont(12),
                         color = if (hintIsError) Color(0xFFD5423F) else Color(0xFF8A8F98),
                         fontWeight = if (hintIsError) FontWeight.Medium else FontWeight.Normal
                     )

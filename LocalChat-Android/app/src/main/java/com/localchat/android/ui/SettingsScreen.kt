@@ -20,7 +20,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -40,15 +42,20 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,10 +71,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.localchat.android.data.ApiFormat
 import com.localchat.android.data.ApiFormatNames
+import com.localchat.android.data.Defaults
 import com.localchat.android.data.ModelConfig
 import com.localchat.android.data.copyTo
 import com.localchat.android.network.LlmClient
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 private val CardBg = Color.White
 private val PageBg = Color(0xFFF7F8FA)
@@ -85,26 +94,125 @@ private sealed class SettingsDialog {
     data class Notice(val title: String, val text: String) : SettingsDialog()
 }
 
+/** 设置页:页签切换「显示设置 / 模型服务」,默认显示字体设置(与桌面版设置窗口一致)。 */
 @Composable
 fun SettingsScreen(vm: MainViewModel, onBack: () -> Unit) {
-    val state = remember { ProviderSettingsState(vm.settings) }
-    val scope = rememberCoroutineScope()
-    var dialog by remember { mutableStateOf<SettingsDialog?>(null) }
-    // 关闭设置页时保存并重建模型下拉项(与桌面版“关闭窗口自动保存”一致)
+    var tab by rememberSaveable { mutableIntStateOf(0) } // 0=显示设置(默认) 1=模型服务
+    // 字号在 FontSettings 里即时生效,返回聊天页时统一同步回设置并落盘
     DisposableEffect(Unit) {
         onDispose { vm.onSettingsClosed() }
     }
     Column(Modifier.fillMaxSize().background(PageBg).windowInsetsPadding(WindowInsets.safeDrawing)) {
         Row(Modifier.fillMaxWidth().background(Color.White), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") }
-            Text("模型服务设置", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-            TextButton(
-                onClick = { state.addProvider(); vm.save() },
-                modifier = Modifier.padding(end = 8.dp)
+            Text("设置", fontSize = uiFont(15), fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+        }
+        HorizontalDivider(thickness = 0.5.dp, color = CardBorder)
+        TabRow(selectedTabIndex = tab, containerColor = Color.White) {
+            Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("显示设置", fontSize = uiFont(13)) })
+            Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("模型服务", fontSize = uiFont(13)) })
+        }
+        Box(Modifier.weight(1f)) {
+            if (tab == 0) DisplaySettingsContent() else ModelSettingsContent(vm)
+        }
+    }
+}
+
+/** 显示设置页:界面/聊天区两个字号滑块 + 预览卡片,修改即时生效,返回时统一保存。 */
+@Composable
+private fun DisplaySettingsContent() {
+    Column(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 18.dp, vertical = 12.dp)) {
+            Text("显示设置", fontSize = uiFont(14.5), fontWeight = FontWeight.SemiBold)
+            Text(
+                "调整界面与聊天区的文字大小,修改即时生效",
+                fontSize = uiFont(12.5), color = Color(0xFF8A8F98), modifier = Modifier.padding(top = 3.dp)
+            )
+        }
+        HorizontalDivider(thickness = 0.5.dp, color = CardBorder)
+        Column(
+            Modifier.weight(1f).verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+        ) {
+            FontSliderCard(
+                "界面字体大小", "侧边栏、顶栏与设置页等界面文字",
+                11.0f..20.0f, FontSettings.uiFontSize
+            ) { FontSettings.apply(it, FontSettings.chatFontSize) }
+            Spacer(Modifier.height(14.dp))
+            FontSliderCard(
+                "聊天区字体大小", "聊天气泡、Markdown 正文与代码块",
+                11.0f..22.0f, FontSettings.chatFontSize
+            ) { FontSettings.apply(FontSettings.uiFontSize, it) }
+            Spacer(Modifier.height(14.dp))
+            Column(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp))
+                    .background(CardBg).border(1.dp, CardBorder, RoundedCornerShape(10.dp))
+                    .padding(horizontal = 14.dp, vertical = 11.dp)
             ) {
+                Text(
+                    "助手回复示例:支持标题、列表与代码块等 Markdown 元素。",
+                    fontSize = chatFont(13.5), lineHeight = chatFont(20), color = Color(0xFF1F2328)
+                )
+                Text(
+                    "思考与次要信息的示例文字",
+                    fontSize = chatFont(12.5), color = Color(0xFF8A8F98), modifier = Modifier.padding(top = 3.dp)
+                )
+            }
+            TextButton(onClick = { FontSettings.apply(Defaults.UiFontSize, Defaults.ChatFontSize) }) {
+                Text("恢复默认", fontSize = uiFont(12.5))
+            }
+        }
+    }
+}
+
+/** 字号滑块卡片:标题 + 当前值 + 滑块(0.5 步进,与桌面版一致)+ 说明。 */
+@Composable
+private fun FontSliderCard(
+    title: String,
+    desc: String,
+    range: ClosedFloatingPointRange<Float>,
+    value: Double,
+    onChange: (Double) -> Unit
+) {
+    Column(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+            .background(CardBg).border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+            .padding(16.dp, 14.dp, 16.dp, 6.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, fontSize = uiFont(14), fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+            Text(fmtSize(value), fontSize = uiFont(13.5), color = LabelGray)
+        }
+        Slider(
+            value = value.toFloat(),
+            onValueChange = { onChange(it.toDouble()) },
+            valueRange = range,
+            steps = ((range.endInclusive - range.start) / 0.5f).toInt() - 1
+        )
+        Text(desc, fontSize = uiFont(12), color = LabelGray, modifier = Modifier.padding(bottom = 8.dp))
+    }
+}
+
+/** 字号值显示:13.0 → "13",13.5 → "13.5"(与桌面版一致)。 */
+private fun fmtSize(v: Double): String =
+    String.format(Locale.US, "%.1f", v).trimEnd('0').trimEnd('.')
+
+/** 模型服务页:服务商与模型配置(由原设置页整体迁入)。 */
+@Composable
+private fun ModelSettingsContent(vm: MainViewModel) {
+    val state = remember { ProviderSettingsState(vm.settings) }
+    val scope = rememberCoroutineScope()
+    var dialog by remember { mutableStateOf<SettingsDialog?>(null) }
+    Column(Modifier.fillMaxSize()) {
+        Row(
+            Modifier.fillMaxWidth().background(Color.White).padding(start = 18.dp, end = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("管理大模型服务商、接口地址与模型参数", fontSize = uiFont(12.5), color = Color(0xFF8A8F98), modifier = Modifier.weight(1f))
+            TextButton(onClick = { state.addProvider(); vm.save() }) {
                 Icon(Icons.Filled.Add, null, Modifier.size(15.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("添加服务商", fontSize = 12.5.sp)
+                Text("添加服务商", fontSize = uiFont(12.5))
             }
         }
         HorizontalDivider(thickness = 0.5.dp, color = CardBorder)
@@ -120,7 +228,7 @@ fun SettingsScreen(vm: MainViewModel, onBack: () -> Unit) {
         HorizontalDivider(thickness = 0.5.dp, color = CardBorder)
         Text(
             "修改即时生效,返回聊天页自动保存",
-            fontSize = 11.5.sp, color = Color(0xFF9AA0A6),
+            fontSize = uiFont(11.5), color = Color(0xFF9AA0A6),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 10.dp)
         )
     }
@@ -170,7 +278,7 @@ private fun ProviderCard(vm: MainViewModel, row: ProviderRow, scope: kotlinx.cor
                 value = row.name,
                 onValueChange = { row.setName(it) },
                 singleLine = true,
-                textStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color(0xFF1F2328)),
+                textStyle = TextStyle(fontSize = uiFont(14), fontWeight = FontWeight.Medium, color = Color(0xFF1F2328)),
                 modifier = Modifier.weight(1f).padding(start = 8.dp)
             )
             Switch(checked = row.enabled, onCheckedChange = { row.setEnabled(it) }, modifier = Modifier.scale(0.75f))
@@ -194,7 +302,7 @@ private fun ProviderCard(vm: MainViewModel, row: ProviderRow, scope: kotlinx.cor
                     .padding(horizontal = 12.dp, vertical = 11.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(ApiFormatNames.all.getOrElse(row.formatIndex) { "" }, fontSize = 13.5.sp, modifier = Modifier.weight(1f))
+                Text(ApiFormatNames.all.getOrElse(row.formatIndex) { "" }, fontSize = uiFont(13.5), modifier = Modifier.weight(1f))
                 Icon(Icons.Filled.ArrowDropDown, null)
             }
             DropdownMenu(expanded = formatMenuOpen, onDismissRequest = { formatMenuOpen = false }) {
@@ -212,7 +320,7 @@ private fun ProviderCard(vm: MainViewModel, row: ProviderRow, scope: kotlinx.cor
                 value = row.apiKey,
                 onValueChange = { row.setApiKey(it) },
                 singleLine = true,
-                textStyle = TextStyle(fontSize = 13.5.sp, color = Color(0xFF1F2328)),
+                textStyle = TextStyle(fontSize = uiFont(13.5), color = Color(0xFF1F2328)),
                 visualTransformation = if (keyHidden) PasswordVisualTransformation() else VisualTransformation.None,
                 modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp))
                     .border(1.dp, Color(0xFFD8DBE0), RoundedCornerShape(8.dp))
@@ -226,7 +334,7 @@ private fun ProviderCard(vm: MainViewModel, row: ProviderRow, scope: kotlinx.cor
             }
         }
         Row(Modifier.padding(top = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("模型列表", fontSize = 12.sp, color = LabelGray)
+            Text("模型列表", fontSize = uiFont(12), color = LabelGray)
             var fetching by remember { mutableStateOf(false) }
             IconButton(
                 onClick = {
@@ -273,7 +381,7 @@ private fun ProviderCard(vm: MainViewModel, row: ProviderRow, scope: kotlinx.cor
             ) {
                 Icon(Icons.Filled.Add, null, Modifier.size(13.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("添加模型", fontSize = 12.sp)
+                Text("添加模型", fontSize = uiFont(12))
             }
         }
         row.models.forEach { m -> ModelItem(row, m, scope, openDialog) }
@@ -289,14 +397,14 @@ private fun ModelItem(provider: ProviderRow, model: ModelRow, scope: kotlinx.cor
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-            Text(model.id, fontSize = 13.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(model.id, fontSize = uiFont(13), fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.width(8.dp))
             Box(Modifier.clip(RoundedCornerShape(6.dp)).background(BadgeBg).padding(horizontal = 5.dp, vertical = 1.dp)) {
-                Text(ctxBadge(model.contextWindow), fontSize = 10.5.sp, color = BadgeText)
+                Text(ctxBadge(model.contextWindow), fontSize = uiFont(10.5), color = BadgeText)
             }
             if (!model.enabled) {
                 Spacer(Modifier.width(8.dp))
-                Text("已停用", fontSize = 11.sp, color = DisabledText)
+                Text("已停用", fontSize = uiFont(11), color = DisabledText)
             }
         }
         IconButton(
@@ -325,7 +433,7 @@ private fun ModelItem(provider: ProviderRow, model: ModelRow, scope: kotlinx.cor
 
 @Composable
 private fun FieldLabel(text: String) {
-    Text(text, fontSize = 12.sp, color = LabelGray, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
+    Text(text, fontSize = uiFont(12), color = LabelGray, modifier = Modifier.padding(top = 12.dp, bottom = 4.dp))
 }
 
 @Composable
@@ -334,7 +442,7 @@ private fun SettingsTextField(value: String, onValueChange: (String) -> Unit) {
         value = value,
         onValueChange = onValueChange,
         singleLine = true,
-        textStyle = TextStyle(fontSize = 13.5.sp, color = Color(0xFF1F2328)),
+        textStyle = TextStyle(fontSize = uiFont(13.5), color = Color(0xFF1F2328)),
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
             .border(1.dp, Color(0xFFD8DBE0), RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 11.dp)

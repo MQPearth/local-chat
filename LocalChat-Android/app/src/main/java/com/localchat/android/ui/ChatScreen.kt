@@ -154,7 +154,7 @@ private fun ConversationsDrawer(
     Column(Modifier.fillMaxHeight().width(280.dp).background(Color.White)) {
         Row(Modifier.padding(start = 18.dp, top = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("💬", fontSize = 17.sp)
-            Text(" 本地聊天", fontSize = 15.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
+            Text(" 本地聊天", fontSize = uiFont(15), fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
         }
         TextButton(
             onClick = { vm.newChat(); scope.launch { drawerState.close() } },
@@ -162,7 +162,7 @@ private fun ConversationsDrawer(
         ) {
             Icon(Icons.Filled.Add, null, Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
-            Text("新建对话", fontSize = 13.sp)
+            Text("新建对话", fontSize = uiFont(13))
         }
         HorizontalDivider(color = DividerColor)
         LazyColumn(Modifier.weight(1f)) {
@@ -176,7 +176,7 @@ private fun ConversationsDrawer(
             }
         }
         HorizontalDivider(color = DividerColor)
-        Text("${vm.conversations.size} 个对话", fontSize = 11.sp, color = MutedText, modifier = Modifier.padding(16.dp))
+        Text("${vm.conversations.size} 个对话", fontSize = uiFont(11), color = MutedText, modifier = Modifier.padding(16.dp))
     }
 }
 
@@ -203,14 +203,14 @@ private fun ConversationRow(
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp)) {
             Text(
-                conv.title, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF23272D),
+                conv.title, fontSize = uiFont(13), fontWeight = FontWeight.SemiBold, color = Color(0xFF23272D),
                 maxLines = 1, overflow = TextOverflow.Ellipsis
             )
             Row(Modifier.padding(top = 3.dp)) {
-                Text(formatTime(conv.updatedAt), fontSize = 11.sp, color = MutedText)
+                Text(formatTime(conv.updatedAt), fontSize = uiFont(11), color = MutedText)
                 if (conv.messageCountText.isNotEmpty()) {
                     Spacer(Modifier.width(8.dp))
-                    Text(conv.messageCountText, fontSize = 11.sp, color = MutedText)
+                    Text(conv.messageCountText, fontSize = uiFont(11), color = MutedText)
                 }
             }
         }
@@ -233,13 +233,13 @@ private fun ChatTopBar(vm: MainViewModel, onOpenSettings: () -> Unit, onMenu: ()
             IconButton(onClick = onMenu) { Icon(Icons.Filled.Menu, "会话列表") }
             Column(Modifier.weight(1f)) {
                 Text(
-                    vm.selected?.title ?: "本地聊天", fontSize = 14.5.sp, fontWeight = FontWeight.SemiBold,
+                    vm.selected?.title ?: "本地聊天", fontSize = uiFont(14.5), fontWeight = FontWeight.SemiBold,
                     maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
                 val ctx = vm.selectedModel?.model?.contextWindow ?: 0
                 Text(
                     "${vm.selectedModel?.toString() ?: "未选择模型"}  ·  上下文 ${if (ctx > 0) ctx.toString() else "-"} tokens",
-                    fontSize = 11.sp, color = MutedText, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    fontSize = uiFont(11), color = MutedText, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 2.dp)
                 )
             }
@@ -249,7 +249,7 @@ private fun ChatTopBar(vm: MainViewModel, onOpenSettings: () -> Unit, onMenu: ()
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        vm.selectedModel?.toString() ?: "选择模型", fontSize = 12.5.sp, color = Color(0xFF374151),
+                        vm.selectedModel?.toString() ?: "选择模型", fontSize = uiFont(12.5), color = Color(0xFF374151),
                         maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 140.dp)
                     )
                     Icon(Icons.Filled.ArrowDropDown, null)
@@ -263,7 +263,7 @@ private fun ChatTopBar(vm: MainViewModel, onOpenSettings: () -> Unit, onMenu: ()
                     }
                 }
             }
-            IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, "模型服务设置") }
+            IconButton(onClick = onOpenSettings) { Icon(Icons.Filled.Settings, "设置") }
         }
         HorizontalDivider(thickness = 0.5.dp, color = DividerColor)
     }
@@ -307,7 +307,7 @@ private fun UserMessage(msg: MessageUi) {
                 .background(Color(0xFF1C1C1E)).padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             SelectionContainer {
-                Text(msg.content, color = Color(0xFFF5F5F5), fontSize = 13.5.sp, lineHeight = 20.sp)
+                Text(msg.content, color = Color(0xFFF5F5F5), fontSize = chatFont(13.5), lineHeight = chatFont(20))
             }
         }
     }
@@ -331,7 +331,7 @@ private fun AssistantMessage(msg: MessageUi) {
                 }
             }
             if (msg.showWaiting) {
-                Text("正在生成…", fontSize = 12.5.sp, color = MutedText, modifier = Modifier.padding(top = 2.dp))
+                Text("正在生成…", fontSize = chatFont(12.5), color = MutedText, modifier = Modifier.padding(top = 2.dp))
             }
         }
         IconButton(
@@ -361,7 +361,7 @@ private fun ThinkingBlock(msg: MessageUi) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("💭", fontSize = 12.sp)
-            Text(msg.thinkingLabel, fontSize = 12.sp, color = Color(0xFF8A8F98), modifier = Modifier.padding(start = 6.dp))
+            Text(msg.thinkingLabel, fontSize = chatFont(12), color = Color(0xFF8A8F98), modifier = Modifier.padding(start = 6.dp))
             Icon(
                 if (msg.thinkingOpen) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
                 null, Modifier.size(14.dp), tint = Color(0xFF8A8F98)
@@ -373,7 +373,7 @@ private fun ThinkingBlock(msg: MessageUi) {
                     .background(Color(0xFFF7F7F8)).padding(horizontal = 11.dp, vertical = 9.dp)
             ) {
                 Text(
-                    msg.reasoning, color = Color(0xFF6F7680), fontSize = 12.5.sp, lineHeight = 19.sp,
+                    msg.reasoning, color = Color(0xFF6F7680), fontSize = chatFont(12.5), lineHeight = chatFont(19),
                     fontStyle = FontStyle.Italic
                 )
             }
@@ -390,7 +390,7 @@ private fun CompactMessage(msg: MessageUi) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("🗜", fontSize = 12.sp)
-            Text(msg.compactHeaderText, fontSize = 12.sp, color = Color(0xFF8A8F98), modifier = Modifier.padding(start = 6.dp))
+            Text(msg.compactHeaderText, fontSize = chatFont(12), color = Color(0xFF8A8F98), modifier = Modifier.padding(start = 6.dp))
             Icon(
                 if (open) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
                 null, Modifier.size(14.dp), tint = Color(0xFF8A8F98)
@@ -402,7 +402,7 @@ private fun CompactMessage(msg: MessageUi) {
                     .background(Color(0xFFF7F7F8)).border(1.dp, Color(0xFFE7EAED), RoundedCornerShape(8.dp))
                     .padding(horizontal = 11.dp, vertical = 9.dp)
             ) {
-                Text(msg.content, color = Color(0xFF6F7680), fontSize = 12.5.sp, lineHeight = 19.sp)
+                Text(msg.content, color = Color(0xFF6F7680), fontSize = chatFont(12.5), lineHeight = chatFont(19))
             }
         }
     }
@@ -416,10 +416,10 @@ private fun EmptyHint() {
         verticalArrangement = Arrangement.Center
     ) {
         Text("💬", fontSize = 42.sp)
-        Text("开始新的对话", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))
+        Text("开始新的对话", fontSize = uiFont(16), fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 12.dp))
         Text(
-            "在下方输入消息开始 · 点击右上角齿轮配置大模型服务",
-            fontSize = 12.5.sp, color = MutedText, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp)
+            "在下方输入消息开始 · 点击右上角齿轮打开设置",
+            fontSize = uiFont(12.5), color = MutedText, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp)
         )
     }
 }
@@ -437,7 +437,7 @@ private fun InputBar(vm: MainViewModel, onCompact: () -> Unit) {
             value = vm.input,
             onValueChange = { vm.input = it },
             modifier = Modifier.fillMaxWidth().heightIn(min = 46.dp).padding(horizontal = 14.dp, vertical = 11.dp),
-            textStyle = TextStyle(fontSize = 13.5.sp, lineHeight = 20.sp, color = Color(0xFF1F2328)),
+            textStyle = TextStyle(fontSize = chatFont(13.5), lineHeight = chatFont(20), color = Color(0xFF1F2328)),
             maxLines = 6
         )
         Row(
@@ -445,18 +445,18 @@ private fun InputBar(vm: MainViewModel, onCompact: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Switch(checked = vm.thinkingEnabled, onCheckedChange = { vm.setThinking(it) }, modifier = Modifier.scale(0.7f))
-            Text("思考", fontSize = 12.5.sp, color = Color(0xFF374151))
+            Text("思考", fontSize = uiFont(12.5), color = Color(0xFF374151))
             TextButton(
                 onClick = onCompact,
                 enabled = !vm.isStreaming && (vm.selected?.messages?.isNotEmpty() == true),
                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
                 modifier = Modifier.padding(start = 12.dp).height(30.dp)
             ) {
-                Text("压缩上下文", fontSize = 12.sp)
+                Text("压缩上下文", fontSize = uiFont(12))
             }
             if (vm.isStreaming) {
                 Spacer(Modifier.width(8.dp))
-                Text("生成中,可点右侧停止", fontSize = 11.sp, color = MutedText, maxLines = 1)
+                Text("生成中,可点右侧停止", fontSize = uiFont(11), color = MutedText, maxLines = 1)
             }
             Spacer(Modifier.weight(1f))
             val used = vm.selected?.estimatedTokens ?: 0

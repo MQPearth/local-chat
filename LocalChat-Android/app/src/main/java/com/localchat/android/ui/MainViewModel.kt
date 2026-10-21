@@ -257,6 +257,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private var streamJob: Job? = null
 
     init {
+        FontSettings.apply(settings.uiFontSize, settings.chatFontSize)
         thinkingEnabled = settings.thinkingEnabled
         settings.conversations.sortedByDescending { it.updatedAt }.forEach { conversations.add(ConversationUi(it)) }
         selected = conversations.firstOrNull()
@@ -341,7 +342,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (text.isEmpty()) return
         val opt = selectedModel
         if (opt == null) {
-            notify("请先点击右上角齿轮打开「模型服务设置」,添加并启用至少一个模型。")
+            notify("请先点击右上角齿轮打开「设置」→「模型服务」,添加并启用至少一个模型。")
             return
         }
         if (selected == null) newChat()
@@ -461,8 +462,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         return summary
     }
 
-    /** 设置页关闭时调用:保存并按最新配置重建模型下拉项。 */
+    /** 设置页关闭时调用:同步字号设置并落盘,按最新配置重建模型下拉项。 */
     fun onSettingsClosed() {
+        settings.uiFontSize = FontSettings.uiFontSize
+        settings.chatFontSize = FontSettings.chatFontSize
         save()
         rebuildModelOptions()
     }

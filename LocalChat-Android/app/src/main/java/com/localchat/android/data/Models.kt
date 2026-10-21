@@ -66,12 +66,17 @@ data class AppSettings(
     var conversations: MutableList<ConversationData> = mutableListOf(),
     var currentProviderId: String? = null,
     var currentModelId: String? = null,
-    var thinkingEnabled: Boolean = false
+    var thinkingEnabled: Boolean = false,
+    var uiFontSize: Double = Defaults.UiFontSize,
+    var chatFontSize: Double = Defaults.ChatFontSize
 )
 
 private fun newId(): String = UUID.randomUUID().toString().replace("-", "")
 
 object Defaults {
+    /** 与桌面版一致的字号基准与默认值。 */
+    const val UiFontSize = 13.0
+    const val ChatFontSize = 13.5
     fun create() = AppSettings(
         providers = mutableListOf(
             ProviderConfig(

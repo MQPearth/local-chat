@@ -38,7 +38,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.localchat.android.ui.chatFont
 
 private val ErrorColor = Color(0xFFD5423F)
 private val MutedColor = Color(0xFF6F7680)
@@ -83,13 +83,13 @@ private fun InlineText(
     inlines: List<MdInline>,
     isError: Boolean = false,
     modifier: Modifier = Modifier,
-    fontSize: TextUnit = 13.5.sp,
-    lineHeight: TextUnit = 21.sp,
+    fontSize: TextUnit = chatFont(13.5),
+    lineHeight: TextUnit = chatFont(21),
     fontWeight: FontWeight? = null,
     color: Color = if (isError) ErrorColor else BodyColor
 ) {
     val context = LocalContext.current
-    val annotated = remember(inlines, color, fontWeight) {
+    val annotated = remember(inlines, color, fontWeight, fontSize) {
         buildAnnotatedString {
             inlines.forEach { mi ->
                 when (mi) {
@@ -107,7 +107,7 @@ private fun InlineText(
                         if (mi.strike) style = style.copy(textDecoration = TextDecoration.LineThrough)
                         if (mi.code) style = style.copy(
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 12.5.sp,
+                            fontSize = chatFont(12.5),
                             background = InlineCodeBg,
                             color = BodyColor
                         )
@@ -144,10 +144,10 @@ private fun InlineText(
 @Composable
 private fun HeadingView(h: MdHeading) {
     val size = when (h.level) {
-        1 -> 19.sp
-        2 -> 17.sp
-        3 -> 15.5.sp
-        else -> 14.sp
+        1 -> chatFont(19.0)
+        2 -> chatFont(17.0)
+        3 -> chatFont(15.5)
+        else -> chatFont(14.0)
     }
     InlineText(
         h.inlines, fontWeight = FontWeight.Bold, fontSize = size, lineHeight = size * 1.45f,
@@ -165,14 +165,14 @@ private fun CodeBlock(c: MdCode) {
             .padding(horizontal = 11.dp, vertical = 8.dp)
     ) {
         if (c.lang.isNotEmpty()) {
-            Text(c.lang, fontSize = 11.sp, color = MutedColor, modifier = Modifier.padding(bottom = 4.dp))
+            Text(c.lang, fontSize = chatFont(11), color = MutedColor, modifier = Modifier.padding(bottom = 4.dp))
         }
         SelectionContainer {
             Text(
                 c.code,
                 fontFamily = FontFamily.Monospace,
-                fontSize = 12.5.sp,
-                lineHeight = 19.sp,
+                fontSize = chatFont(12.5),
+                lineHeight = chatFont(19),
                 color = CodeTextColor
             )
         }
@@ -197,7 +197,7 @@ private fun QuoteView(q: MdQuote) {
 @Composable
 private fun ItemView(it: MdItem) {
     Row(Modifier.fillMaxWidth().padding(start = (6 + it.level * 16).dp, top = 2.dp, bottom = 2.dp)) {
-        Text(it.marker + " ", color = MutedColor, fontSize = 13.5.sp, lineHeight = 21.sp)
+        Text(it.marker + " ", color = MutedColor, fontSize = chatFont(13.5), lineHeight = chatFont(21))
         InlineText(it.inlines, modifier = Modifier.weight(1f))
     }
 }
@@ -236,7 +236,7 @@ private fun TableHeaderView(cells: List<List<MdInline>>, widths: List<androidx.c
     Row {
         widths.forEachIndexed { c, w ->
             InlineText(
-                cells.getOrElse(c) { emptyList() }, fontSize = 12.5.sp, lineHeight = 18.sp, fontWeight = FontWeight.Bold,
+                cells.getOrElse(c) { emptyList() }, fontSize = chatFont(12.5), lineHeight = chatFont(18), fontWeight = FontWeight.Bold,
                 modifier = Modifier.width(w).background(CodeBg)
                     .border(width = 0.5.dp, color = MdBorderColor)
                     .padding(horizontal = 8.dp, vertical = 5.dp)
@@ -250,7 +250,7 @@ private fun TableRowView(cells: List<List<MdInline>>, widths: List<androidx.comp
     Row {
         widths.forEachIndexed { c, w ->
             InlineText(
-                cells.getOrElse(c) { emptyList() }, fontSize = 12.5.sp, lineHeight = 18.sp,
+                cells.getOrElse(c) { emptyList() }, fontSize = chatFont(12.5), lineHeight = chatFont(18),
                 modifier = Modifier.width(w)
                     .border(width = 0.5.dp, color = MdBorderColor)
                     .padding(horizontal = 8.dp, vertical = 5.dp)
