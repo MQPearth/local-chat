@@ -223,6 +223,9 @@
                                     <Setter TargetName="t" Property="Foreground" Value="#171717"/>
                                     <Setter TargetName="t" Property="TextDecorations" Value="Underline"/>
                                 </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.45"/>
+                                </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>

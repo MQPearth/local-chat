@@ -431,6 +431,7 @@ public class MainViewModel : ObservableObject
     public RelayCommand StopCommand { get; }
     public RelayCommand OpenSettingsCommand { get; }
     public RelayCommand DeleteConversationCommand { get; }
+    public RelayCommand ClearAllConversationsCommand { get; }
     public RelayCommand RenameConversationCommand { get; }
     public RelayCommand ExportHttpCommand { get; }
     public RelayCommand CompactContextCommand { get; }
@@ -461,6 +462,8 @@ public class MainViewModel : ObservableObject
         StopCommand = new RelayCommand(_ => _cts?.Cancel(), _ => IsStreaming);
         OpenSettingsCommand = new RelayCommand(_ => OpenSettings());
         DeleteConversationCommand = new RelayCommand(o => DeleteConversation(o as ConversationVM));
+        ClearAllConversationsCommand = new RelayCommand(_ => ClearAllConversations(),
+            _ => Conversations.Count > 0);
         RenameConversationCommand = new RelayCommand(o => RenameConversation(o as ConversationVM));
         ExportHttpCommand = new RelayCommand(o => ExportHttp(o as ConversationVM));
         CompactContextCommand = new RelayCommand(_ => _ = CompactAsync(),
@@ -662,6 +665,22 @@ public class MainViewModel : ObservableObject
             Raise(nameof(SelectedConversation));
         }
         Save();
+    }
+
+    /// <summary>一键清除全部历史对话:确认后终止进行中的流式请求,清空列表并落盘。</summary>
+    public void ClearAllConversations()
+    {
+        if (Conversations.Count == 0) return;
+        var r = MessageBox.Show($"确定清除全部 {Conversations.Count} 个对话吗?该操作不可恢复。",
+            "清除历史对话", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (r != MessageBoxResult.Yes) return;
+        if (IsStreaming) _cts?.Cancel();
+        Settings.Conversations.Clear();
+        Conversations.Clear();
+        _selected = null;
+        Raise(nameof(SelectedConversation));
+        Save();
+        CommandManager.InvalidateRequerySuggested();
     }
 
     public void RenameConversation(ConversationVM? c)

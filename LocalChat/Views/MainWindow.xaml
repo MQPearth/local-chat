@@ -186,8 +186,14 @@
                          Padding="4,0" Background="Transparent"/>
 
                 <Border Grid.Row="3" Padding="16,8" BorderBrush="#ECEEF1" BorderThickness="0,1,0,0">
-                    <TextBlock Text="{Binding Conversations.Count, StringFormat='{}{0} 个对话'}"
-                               FontSize="{DynamicResource UiFontHint}" Foreground="#9AA0A6"/>
+                    <Grid>
+                        <TextBlock Text="{Binding Conversations.Count, StringFormat='{}{0} 个对话'}"
+                                   FontSize="{DynamicResource UiFontHint}" Foreground="#9AA0A6" VerticalAlignment="Center"/>
+                        <Button Content="清空" Style="{StaticResource LinkButton}" HorizontalAlignment="Right"
+                                VerticalAlignment="Center" Margin="8,0,0,0"
+                                Command="{Binding ClearAllConversationsCommand}"
+                                ToolTip="一键清除全部历史对话"/>
+                    </Grid>
                 </Border>
             </Grid>
         </Border>
